@@ -22,12 +22,12 @@
   },
   "homepage": "https://github.com/Gustavo067/03-api-solid#readme",
   "devDependencies": {
-    "@types/node": "^25.9.1",
-    "tsup": "^8.5.1",
-    "tsx": "^4.22.3",
-    "typescript": "^6.0.3"
+    "@types/node": "25.9.1",
+    "tsup": "8.5.1",
+    "tsx": "4.22.3",
+    "typescript": "6.0.3"
   },
   "dependencies": {
-    "fastify": "^5.8.5"
+    "fastify": "5.8.5"
   }
 }
