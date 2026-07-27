@@ -2,6 +2,7 @@ import type { CheckIn } from "@prisma/client";
 import type { CheckInsRepository } from "../repositories/check-ins-repository";
 import type { GymsRepository } from "../repositories/gym-repository";
 import { ResourceNotFoundError } from "./erros/resource-not-found-error";
+import { getDistanceBetweenCoordinates } from "@/utils/get-distance-between-coordinate";
 
 interface CheckInUseCaseRequest {
   userId: string;
@@ -22,29 +23,33 @@ export class CheckInUseCase {
 
   }
 
-  async execute({ userId, gymId }: CheckInUseCaseRequest): Promise<CheckInUseCaseResponse> {
+  async execute({ userId, gymId, userLatitude, userLongitude }: CheckInUseCaseRequest): Promise<CheckInUseCaseResponse> {
 
     const gym = await this.gymsRepository.findById(gymId);
 
-    if(!gym) {
+    if (!gym) {
       throw new ResourceNotFoundError();
     }
 
-    
+    const distance = getDistanceBetweenCoordinates({ latitude: userLatitude, longitude: userLongitude }, { latitude: gym.latitude?.toNumber() ?? 0, longitude: gym.longitude?.toNumber() ?? 0 });
+    const MAX_DISTANCE_IN_KILOMETERS_IN_KILOMETERS = 0.1;
+    if (distance > MAX_DISTANCE_IN_KILOMETERS_IN_KILOMETERS) {
+      throw new Error("Distance is too far from the gym");
+    }
 
     const checkInOnSameDate = await this.checkInsRepository.findByUserIdOnDate(userId, new Date());
 
-    if(checkInOnSameDate) {
+    if (checkInOnSameDate) {
       throw new Error("User already checked in on the same day");
     }
 
-   const checkIn = await this.checkInsRepository.create({
-    user_id: userId,
-    gym_id: gymId,
-   });
+    const checkIn = await this.checkInsRepository.create({
+      user_id: userId,
+      gym_id: gymId,
+    });
 
-   return {
-    checkIn,
-   }
+    return {
+      checkIn,
+    }
   }
 }
